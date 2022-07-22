@@ -1,0 +1,22 @@
+# path definitions
+output: logs/lxmert/snap/vqa
+path_vqa_data: /storage/workspaces/artorg_aimi/ws_000000/sergio/lxmert/data/vqa
+path_image_features: /storage/workspaces/artorg_aimi/ws_000000/sergio/lxmert/data/mscoco_imgfeat
+load_lxmert_qa: /storage/workspaces/artorg_aimi/ws_000000/sergio/lxmert/snap/pretrained/model
+
+# what to train on
+train: train,nominival
+valid: minival
+tiny: True
+
+# model properties
+llayers: 9
+xlayers: 5
+rlayers: 5
+
+# training hyperparameters
+batch_size: 32
+optim: bert
+lr: 0.00005
+epochs: 4
+tqdm: True
