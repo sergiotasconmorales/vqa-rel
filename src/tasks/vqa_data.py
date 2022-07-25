@@ -24,6 +24,7 @@ MSCOCO_IMGFEAT_ROOT = 'data/mscoco_imgfeat/'
 SPLIT2NAME = {
     'train': 'train2014',
     'valid': 'val2014',
+    'val': 'val2014',
     'minival': 'val2014',
     'nominival': 'val2014',
     'test': 'test2015',
