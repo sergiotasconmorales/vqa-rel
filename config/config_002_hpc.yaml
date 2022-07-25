@@ -6,7 +6,7 @@ load_lxmert_qa: /storage/workspaces/artorg_aimi/ws_00000/sergio/lxmert/snap/pret
 
 # what to train on
 train: train
-valid: valid
+valid: val
 tiny: False
 
 # model properties
