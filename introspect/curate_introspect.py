@@ -13,6 +13,7 @@ from tqdm import tqdm
 import json
 from os.path import join as jp
 import os
+from answer_processing import preprocess_answer
 
 path_data = '/home/sergio814/Documents/PhD/code/data/'
 path_introspect = jp(path_data, 'VQAIntrospect')
@@ -71,7 +72,7 @@ for s in subsets:
             for sqae in sub_qa_entries:
                 temp_dict = {   'answer_type': 'other',
                                 'img_id': 'COCO_{}2014_{}'.format(s, str(v['image_id']).zfill(12)), 
-                                'label': {sqae['sub_answer']: 1},
+                                'label': {preprocess_answer(sqae['sub_answer']): 1},
                                 'question_id': sqae['subquestion_id'],
                                 'question_type': 'are', # assumed
                                 'sent': sqae['sub_question'],
@@ -82,5 +83,5 @@ for s in subsets:
 
 # step 5: save new version of introspect
     print('Number of introspect samples (main + sub):', len(new_introspect))
-    with open(jp(path_output, '{}.json'.format(s)), 'w') as f:
+    with open(jp(path_output, '{}_unprocessed.json'.format(s)), 'w') as f:
         json.dump(new_introspect, f)

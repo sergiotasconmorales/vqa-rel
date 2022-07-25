@@ -12,7 +12,7 @@
             "console": "integratedTerminal",
             "justMyCode": true,
             "cwd": "/home/sergio814/Documents/PhD/code",
-            "args": ["--path_config", "vqa-rel/config/config_001_local.yaml"]
+            "args": ["--path_config", "vqa-rel/config/config_002_local.yaml"]
         }
     ]
 }
