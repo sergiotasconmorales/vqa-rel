@@ -16,19 +16,31 @@ from aux.io import read_config, update_args
 from param import args
 from pretrain.qa_answer_table import load_lxmert_qa
 from tasks.vqa_model import VQAModel
-from tasks.vqa_data import VQADataset, VQATorchDataset, VQAEvaluator
+from tasks.vqa_data import VQADataset, VQADatasetPairs, VQATorchDataset, VQATorchDatasetPairs, VQAEvaluator, collater_pairs
 
 DataTuple = collections.namedtuple("DataTuple", 'dataset loader evaluator')
 
 
 def get_data_tuple(splits: str, bs:int, shuffle=False, drop_last=False) -> DataTuple:
-    dset = VQADataset(splits)
-    tset = VQATorchDataset(dset)
+    if 'pairs' in args:
+        if args.pairs and args.test is None: 
+            dset = VQADatasetPairs(splits)
+            tset = VQATorchDatasetPairs(dset)
+            collater_fn = collater_pairs
+        else:
+            dset = VQADataset(splits)
+            tset = VQATorchDataset(dset)
+            collater_fn = None
+    else:
+        dset = VQADataset(splits)
+        tset = VQATorchDataset(dset)
+        collater_fn = None
+    
     evaluator = VQAEvaluator(dset)
     data_loader = DataLoader(
         tset, batch_size=bs,
         shuffle=shuffle, num_workers=args.num_workers,
-        drop_last=drop_last, pin_memory=True
+        drop_last=drop_last, pin_memory=True, collate_fn=collater_fn
     )
 
     return DataTuple(dataset=dset, loader=data_loader, evaluator=evaluator)
@@ -48,6 +60,8 @@ class VQA:
         else:
             self.valid_tuple = None
         
+        ques_id, feats, boxes, sent, target = next(iter(self.train_tuple[1])) #! DEBUGGING
+
         # Model
         self.model = VQAModel(self.train_tuple.dataset.num_answers)
 

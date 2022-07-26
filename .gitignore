@@ -7,3 +7,5 @@ src/tasks/__pycache__/
 src/lxrt/__pycache__/
 
 *.pyc
+
+.vscode/

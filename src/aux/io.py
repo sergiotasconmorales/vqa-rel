@@ -32,5 +32,4 @@ def update_args(args, updated_values, exp_name):
     for k,v in updated_values.items():
         setattr(args, k, v)
 
-
     return args
