@@ -187,7 +187,7 @@ class VQATorchDataset(Dataset):
             target = torch.zeros(self.raw_dataset.num_answers)
             for ans, score in label.items():
                 target[self.raw_dataset.ans2label[ans]] = score
-            return ques_id, feats, boxes, ques, target, None, None
+            return ques_id, feats, boxes, ques, target
         else:
             return ques_id, feats, boxes, ques
 
