@@ -239,6 +239,8 @@ if __name__ == "__main__":
     # Update args with info from config
     update_args(args, config, exp_name)
 
+    print("Experiment for config file:", exp_name)
+
     # Build Class
     vqa = VQA()
 
@@ -271,7 +273,7 @@ if __name__ == "__main__":
             result = vqa.evaluate(
                 get_data_tuple(subset, bs=950,
                                shuffle=False, drop_last=False),
-                dump=os.path.join(args.output, 'minival_predict.json')
+                dump=os.path.join(args.output, subset + '_predict.json')
             )
             print(result)
         else:
