@@ -10,6 +10,7 @@ import collections
 import torch
 import torch.nn as nn
 from torch.utils.data.dataloader import DataLoader
+from torch.utils.data import default_collate
 from tqdm import tqdm
 from aux.io import read_config, update_args
 
@@ -30,11 +31,11 @@ def get_data_tuple(splits: str, bs:int, shuffle=False, drop_last=False) -> DataT
         else:
             dset = VQADataset(splits)
             tset = VQATorchDataset(dset)
-            collater_fn = None
+            collater_fn = default_collate
     else:
         dset = VQADataset(splits)
         tset = VQATorchDataset(dset)
-        collater_fn = None
+        collater_fn = default_collate
     
     evaluator = VQAEvaluator(dset)
     data_loader = DataLoader(
@@ -249,8 +250,8 @@ if __name__ == "__main__":
     # Test or Train
     if args.test is not None:
         # load weights of this config file
-        vqa.load(os.path.join(args.output, 'BEST'))
-        args.fast = args.tiny = False       # Always loading all data in test
+        vqa.load(os.path.join(args.output, 'BEST')) 
+        args.fast = args.tiny = False       # Always loading all data in test 
         if 'test' in args.test:
             vqa.predict(
                 get_data_tuple(args.test, bs=950,
