@@ -187,7 +187,7 @@ class VQATorchDataset(Dataset):
             target = torch.zeros(self.raw_dataset.num_answers)
             for ans, score in label.items():
                 target[self.raw_dataset.ans2label[ans]] = score
-            return ques_id, feats, boxes, ques, target
+            return ques_id, feats, boxes, ques, target, None, None
         else:
             return ques_id, feats, boxes, ques
 
@@ -197,6 +197,8 @@ class VQATorchDatasetPairs(Dataset):
     def __init__(self, dataset: VQADataset):
         super().__init__()
         self.raw_dataset = dataset
+
+        self.map_rel_index = {'---': 2, '-->': 1, '<--': 0, 'unk': 2}
 
         if args.tiny:
             topk = TINY_IMG_NUM
@@ -233,6 +235,12 @@ class VQATorchDatasetPairs(Dataset):
         samples = [] # to store two samples
         pair = self.data[item] # get pair with index item from the list of pairs
 
+        if pair[1]['role'] == 'sub': # get flag and relationship before processing the pair
+            good = True # the pair is useful for consistency
+            reli = self.map_rel_index[pair[1]['rel']]
+        else:
+            good = False
+
         for datum in pair:
             img_id = datum['img_id']
             ques_id = datum['question_id']
@@ -253,13 +261,22 @@ class VQATorchDatasetPairs(Dataset):
             np.testing.assert_array_less(boxes, 1+1e-5)
             np.testing.assert_array_less(-boxes, 0+1e-5)
 
+            if good:
+                rel = reli
+            else:
+                rel = 2
+            if datum['role'] == 'ind':
+                flag = 0
+            else:
+                flag = 1
+
             # Provide label (target)
             if 'label' in datum:
                 label = datum['label']
                 target = torch.zeros(self.raw_dataset.num_answers)
                 for ans, score in label.items():
                     target[self.raw_dataset.ans2label[ans]] = score
-                samples.append((ques_id, feats, boxes, ques, target))
+                samples.append((ques_id, feats, boxes, ques, target, rel, flag)) # adding rel and flag. Must add them to normal function too, but as None
             else:
                 samples.append((ques_id, feats, boxes, ques))
         return tuple(samples)

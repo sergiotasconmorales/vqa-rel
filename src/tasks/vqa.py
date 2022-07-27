@@ -19,7 +19,7 @@ from tasks.vqa_model import VQAModel
 from tasks.vqa_data import VQADataset, VQADatasetPairs, VQATorchDataset, VQATorchDatasetPairs, VQAEvaluator, collater_pairs
 
 DataTuple = collections.namedtuple("DataTuple", 'dataset loader evaluator')
-
+EPSILON = 1e-10 
 
 def get_data_tuple(splits: str, bs:int, shuffle=False, drop_last=False) -> DataTuple:
     if 'pairs' in args:
@@ -46,6 +46,37 @@ def get_data_tuple(splits: str, bs:int, shuffle=False, drop_last=False) -> DataT
     return DataTuple(dataset=dset, loader=data_loader, evaluator=evaluator)
 
 
+
+def consistency_loss(prob, target, rel, cnst_fcn='fcn1'):
+    assert prob.shape[0] == target.shape[0] == rel.shape[0]
+    if torch.sum(rel) == 2*rel.shape[0]: # no useful pairs
+        return torch.tensor(0)
+    # get main and sub parts of everything
+    prob_main = prob[::2, :]
+    prob_sub = prob[1::2, :]
+    target_main = target[::2, :]
+    target_sub = target[1::2, :]
+    rel_red = rel[::2]
+
+    p = torch.zeros_like(rel_red, dtype=torch.float32).cuda()
+    q = torch.zeros_like(rel_red, dtype=torch.float32).cuda()
+
+    # For <-- relations (0 index in rel)
+    p[rel_red==0] = 1 - (prob_main[rel_red==0]*(target_main[rel_red==0]>0).to(torch.float32)).sum(1)
+    q[rel_red==0] = (prob_main[rel_red==0]*(target_main[rel_red==0]>0).to(torch.float32)).sum(1)
+
+    # For --> relations (1 index in rel)
+    p[rel_red==1] = (prob_main[rel_red==1]*(target_main[rel_red==1]>0).to(torch.float32)).sum(1)
+    q[rel_red==1] = 1 - (prob_main[rel_red==1]*(target_main[rel_red==1]>0).to(torch.float32)).sum(1)
+
+    flag_valid = (rel_red<2).to(torch.int64)
+
+    if cnst_fcn == 'fcn1':
+        return torch.mean(torch.log(1-p + EPSILON)*torch.log(1-q + EPSILON)[torch.where(flag_valid>0)])
+    else:
+        sigma = 0.4
+        return torch.mean(torch.exp(-((p - 1)**2 + (q - 1)**2)/(2*sigma**2))[torch.where(flag_valid>0)])
+
 class VQA:
     def __init__(self):
         # Datasets
@@ -59,8 +90,6 @@ class VQA:
             )
         else:
             self.valid_tuple = None
-        
-        ques_id, feats, boxes, sent, target = next(iter(self.train_tuple[1])) #! DEBUGGING
 
         # Model
         self.model = VQAModel(self.train_tuple.dataset.num_answers)
@@ -95,23 +124,30 @@ class VQA:
         self.output = args.output
         os.makedirs(self.output, exist_ok=True)
 
+
     def train(self, train_tuple, eval_tuple):
         dset, loader, evaluator = train_tuple
         iter_wrapper = (lambda x: tqdm(x, total=len(loader))) if args.tqdm else (lambda x: x)
+        softmax = nn.Softmax(dim=1)
 
         best_valid = 0.
         for epoch in range(args.epochs):
             quesid2ans = {}
-            for i, (ques_id, feats, boxes, sent, target) in iter_wrapper(enumerate(loader)):
+            for i, (ques_id, feats, boxes, sent, target, rel, flag) in iter_wrapper(enumerate(loader)):
 
                 self.model.train()
                 self.optim.zero_grad()
 
-                feats, boxes, target = feats.cuda(), boxes.cuda(), target.cuda()
+                feats, boxes, target, rel = feats.cuda(), boxes.cuda(), target.cuda(), rel.cuda()
                 logit = self.model(feats, boxes, sent)
                 assert logit.dim() == target.dim() == 2
                 loss = self.bce_loss(logit, target)
-                loss = loss * logit.size(1)
+                if 'cnst_fcn' in args: 
+                    gain = getattr(args, 'gain')
+                    cons_term = consistency_loss(softmax(logit), target, rel, args.cnst_fcn)
+                    loss = loss + gain*cons_term
+                else:
+                    loss = loss * logit.size(1)
 
                 loss.backward()
                 nn.utils.clip_grad_norm_(self.model.parameters(), 5.)
@@ -179,7 +215,10 @@ class VQA:
             for qid, l in zip(ques_id, label.cpu().numpy()):
                 ans = dset.label2ans[l]
                 quesid2ans[qid.item()] = ans
-        return evaluator.evaluate(quesid2ans)
+        if len(quesid2ans) == 0:
+            return 0
+        else:
+            return evaluator.evaluate(quesid2ans)
 
     def save(self, name):
         torch.save(self.model.state_dict(),
