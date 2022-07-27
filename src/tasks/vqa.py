@@ -72,9 +72,6 @@ def consistency_loss(prob, target, rel, cnst_fcn='fcn1'):
     flag_valid = (rel_red<2).to(torch.int64)
 
     if cnst_fcn == 'fcn1':
-        print('p:', p.shape)
-        print('q:', q.shape)
-        print('flag_valid:', flag_valid.shape)
         return torch.mean((torch.log(1-p + EPSILON)*torch.log(1-q + EPSILON))[torch.where(flag_valid>0)])
     else:
         sigma = 0.4
