@@ -72,6 +72,9 @@ def consistency_loss(prob, target, rel, cnst_fcn='fcn1'):
     flag_valid = (rel_red<2).to(torch.int64)
 
     if cnst_fcn == 'fcn1':
+        print('p:', p.shape)
+        print('q:', q.shape)
+        print('flag_valid:', flag_valid)
         return torch.mean(torch.log(1-p + EPSILON)*torch.log(1-q + EPSILON)[torch.where(flag_valid>0)])
     else:
         sigma = 0.4
@@ -257,8 +260,12 @@ if __name__ == "__main__":
         elif 'val' in args.test:    
             # Since part of valididation data are used in pre-training/fine-tuning,
             # only validate on the minival set.
+            if 'minival' in vqa.train_tuple.dataset.splits:
+                subset = 'minival'
+            else:
+                subset = 'val'
             result = vqa.evaluate(
-                get_data_tuple('minival', bs=950,
+                get_data_tuple(subset, bs=950,
                                shuffle=False, drop_last=False),
                 dump=os.path.join(args.output, 'minival_predict.json')
             )
