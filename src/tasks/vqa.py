@@ -257,6 +257,9 @@ if __name__ == "__main__":
                 dump=os.path.join(args.output, 'test_predict.json')
             )
         elif 'val' in args.test:    
+            # make sure no pairs are built 
+            if hasattr(args, 'pairs'):
+                delattr(args, 'pairs')
             # Since part of valididation data are used in pre-training/fine-tuning,
             # only validate on the minival set.
             if 'minival' in vqa.train_tuple.dataset.splits:
