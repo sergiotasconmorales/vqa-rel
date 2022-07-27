@@ -74,8 +74,8 @@ def consistency_loss(prob, target, rel, cnst_fcn='fcn1'):
     if cnst_fcn == 'fcn1':
         print('p:', p.shape)
         print('q:', q.shape)
-        print('flag_valid:', flag_valid)
-        return torch.mean(torch.log(1-p + EPSILON)*torch.log(1-q + EPSILON)[torch.where(flag_valid>0)])
+        print('flag_valid:', flag_valid.shape)
+        return torch.mean((torch.log(1-p + EPSILON)*torch.log(1-q + EPSILON))[torch.where(flag_valid>0)])
     else:
         sigma = 0.4
         return torch.mean(torch.exp(-((p - 1)**2 + (q - 1)**2)/(2*sigma**2))[torch.where(flag_valid>0)])
@@ -250,6 +250,8 @@ if __name__ == "__main__":
 
     # Test or Train
     if args.test is not None:
+        # load weights of this config file
+        vqa.load(os.path.join(args.output, 'BEST'))
         args.fast = args.tiny = False       # Always loading all data in test
         if 'test' in args.test:
             vqa.predict(
