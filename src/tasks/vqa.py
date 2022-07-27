@@ -202,6 +202,7 @@ class VQA:
         return quesid2ans
 
     def evaluate(self, eval_tuple: DataTuple, dump=None):
+        print(type(eval_tuple).__name__) # DEBUG
         """Evaluate all data in data_tuple."""
         quesid2ans = self.predict(eval_tuple, dump)
         return eval_tuple.evaluator.evaluate(quesid2ans)
