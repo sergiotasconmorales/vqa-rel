@@ -176,7 +176,7 @@ class VQA:
                 f.write(log_str)
                 f.flush()
 
-        self.save("LAST")
+        #self.save("LAST")
 
     def predict(self, eval_tuple: DataTuple, dump=None):
         """

@@ -9,8 +9,8 @@ train: train
 valid: val
 pairs: True
 tiny: False
-cnst_fcn: fcn2
-gain: 0.001
+cnst_fcn: fcn1
+gain: 0.0001
 
 # model properties
 llayers: 9
