@@ -64,11 +64,11 @@ def consistency_loss(prob, target, rel, cnst_fcn='fcn1'):
 
     # For <-- relations (0 index in rel)
     p[rel_red==0] = 1 - (prob_main[rel_red==0]*(target_main[rel_red==0]>0).to(torch.float32)).sum(1)
-    q[rel_red==0] = (prob_main[rel_red==0]*(target_main[rel_red==0]>0).to(torch.float32)).sum(1)
+    q[rel_red==0] = (prob_sub[rel_red==0]*(target_sub[rel_red==0]>0).to(torch.float32)).sum(1)
 
     # For --> relations (1 index in rel)
     p[rel_red==1] = (prob_main[rel_red==1]*(target_main[rel_red==1]>0).to(torch.float32)).sum(1)
-    q[rel_red==1] = 1 - (prob_main[rel_red==1]*(target_main[rel_red==1]>0).to(torch.float32)).sum(1)
+    q[rel_red==1] = 1 - (prob_sub[rel_red==1]*(target_sub[rel_red==1]>0).to(torch.float32)).sum(1)
 
     flag_valid = (rel_red<2).to(torch.int64)
 
