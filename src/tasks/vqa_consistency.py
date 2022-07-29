@@ -6,7 +6,7 @@ import torch
 from torch.nn import ReLU
 import numpy as np
 
-path_pred = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_014_hpc'
+path_pred = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_017_hpc'
 path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_noeq'
 
 pred_name =  'val_predict.json'
