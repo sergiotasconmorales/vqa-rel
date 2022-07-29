@@ -6,10 +6,10 @@ import torch
 from torch.nn import ReLU
 import numpy as np
 
-path_pred = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_004_hpc'
+path_pred = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_014_hpc'
 path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_noeq'
 
-pred_name =  'minival_predict.json'
+pred_name =  'val_predict.json'
 qa_name = 'val.json'
 map_name = 'trainval_ans2label.json'
 
@@ -106,4 +106,4 @@ for i in range(correct_main.shape[0]):
 
 rels_onehot.scatter_(1, rels_int, 1)
 c = compute_consistency_rels(correct_main, correct_sub, rels_onehot)
-print(c)
+print('Consistency:', c)

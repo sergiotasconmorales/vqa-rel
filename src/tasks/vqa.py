@@ -74,9 +74,11 @@ def consistency_loss(prob, target, rel, cnst_fcn='fcn1'):
 
     if cnst_fcn == 'fcn1':
         return torch.mean((torch.log(1-p + EPSILON)*torch.log(1-q + EPSILON))[torch.where(flag_valid>0)])
-    else:
+    elif cnst_fcn == 'fcn2':
         sigma = 0.4
         return torch.mean(torch.exp(-((p - 1)**2 + (q - 1)**2)/(2*sigma**2))[torch.where(flag_valid>0)])
+    else:
+        return torch.mean((-p*torch.log(1-q + EPSILON) - q*torch.log(1-p + EPSILON))[torch.where(flag_valid>0)])
 
 class VQA:
     def __init__(self):
@@ -146,7 +148,7 @@ class VQA:
                 if 'cnst_fcn' in args: 
                     gain = getattr(args, 'gain')
                     cons_term = consistency_loss(softmax(logit), target, rel, args.cnst_fcn)
-                    loss = loss + gain*cons_term
+                    loss = (loss + gain*cons_term)*logit.size(1)
                 else:
                     loss = loss * logit.size(1)
 
