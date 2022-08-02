@@ -48,9 +48,9 @@ def get_data_tuple(splits: str, bs:int, shuffle=False, drop_last=False) -> DataT
 
 
 
-def consistency_loss(prob, target, rel, cnst_fcn='fcn1'):
+def consistency_loss(prob, target, rel, epoch, cnst_fcn='fcn1'):
     assert prob.shape[0] == target.shape[0] == rel.shape[0]
-    if torch.sum(rel) == 2*rel.shape[0]: # no useful pairs
+    if torch.sum(rel) == 2*rel.shape[0] or epoch<=2: # no useful pairs
         return torch.tensor(0)
     # get main and sub parts of everything
     prob_main = prob[::2, :]
@@ -147,7 +147,7 @@ class VQA:
                 loss = self.bce_loss(logit, target)
                 if 'cnst_fcn' in args: 
                     gain = getattr(args, 'gain')
-                    cons_term = consistency_loss(softmax(logit), target, rel, args.cnst_fcn)
+                    cons_term = consistency_loss(softmax(logit), target, rel, epoch, cnst_fcn = args.cnst_fcn)
                     loss = (loss + gain*cons_term)*logit.size(1)
                 else:
                     loss = loss * logit.size(1)
