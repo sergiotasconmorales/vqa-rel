@@ -52,6 +52,7 @@ def consistency_loss(prob, target, rel, epoch, cnst_fcn='fcn1'):
     assert prob.shape[0] == target.shape[0] == rel.shape[0]
     if torch.sum(rel) == 2*rel.shape[0] or epoch<=2: # no useful pairs
         return torch.tensor(0)
+    print('Now using consistency term')
     # get main and sub parts of everything
     prob_main = prob[::2, :]
     prob_sub = prob[1::2, :]
