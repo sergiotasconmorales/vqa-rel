@@ -11,6 +11,7 @@ pairs: True
 tiny: True
 cnst_fcn: fcn1
 gain: 0.75
+start_loss_from_epoch: 0
 
 # model properties
 llayers: 9

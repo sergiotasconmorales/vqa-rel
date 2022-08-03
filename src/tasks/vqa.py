@@ -6,7 +6,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 import collections
-
+import json
 import torch
 import torch.nn as nn
 from torch.utils.data.dataloader import DataLoader
@@ -51,7 +51,7 @@ def get_data_tuple(splits: str, bs:int, shuffle=False, drop_last=False) -> DataT
 def consistency_loss(prob, target, rel, epoch, cnst_fcn='fcn1'):
     assert prob.shape[0] == target.shape[0] == rel.shape[0]
     if torch.sum(rel) == 2*rel.shape[0] or epoch<args.start_loss_from_epoch: # no useful pairs
-        return torch.tensor(0)
+        return torch.tensor(0).cuda()
     # get main and sub parts of everything
     prob_main = prob[::2, :]
     prob_sub = prob[1::2, :]
@@ -133,6 +133,8 @@ class VQA:
         iter_wrapper = (lambda x: tqdm(x, total=len(loader))) if args.tqdm else (lambda x: x)
         softmax = nn.Softmax(dim=1)
 
+        consistency_log = {i:[] for i in range(args.epochs)}
+
         best_valid = 0.
         for epoch in range(args.epochs):
             quesid2ans = {}
@@ -149,6 +151,7 @@ class VQA:
                     gain = getattr(args, 'gain')
                     cons_term = consistency_loss(softmax(logit), target, rel, epoch, cnst_fcn = args.cnst_fcn)
                     loss = (loss + gain*cons_term)*logit.size(1)
+                    consistency_log[epoch].append(cons_term.detach().cpu().item())
                 else:
                     loss = loss * logit.size(1)
 
@@ -179,6 +182,9 @@ class VQA:
                 f.flush()
 
         self.save("LAST")
+        # save consistency loss term log
+        with open(os.path.join(self.output, 'consistency_log.json'), 'w') as f:
+            json.dump(consistency_log, f)
 
     def predict(self, eval_tuple: DataTuple, dump=None):
         """

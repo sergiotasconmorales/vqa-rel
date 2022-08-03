@@ -49,9 +49,17 @@ for s in subsets:
     with open(jp(path_data, '{}_unprocessed.json'.format(s))) as f:
         data = json.load(f)
     for e in data:
+        # add some rules for typos
+        if 'yea' in e['label']:
+            p = e['label'].pop('yea')
+            e['label']['yes'] = p
+
+        lab_copy = deepcopy(e['label'])
         for k,_ in e['label'].items():
             if k not in chosen_answers:
-                e['label'] = {unknown_token: 1}
+                value = lab_copy.pop(k)
+                lab_copy['UNK'] = value
+        e['label'] = lab_copy
     # save
     with open(jp(path_data, '{}.json'.format(s)), 'w') as f:
         json.dump(data, f)
