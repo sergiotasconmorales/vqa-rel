@@ -9,7 +9,7 @@ train: train
 valid: val
 pairs: True
 tiny: True
-cnst_fcn: fcn1
+cnst_fcn: fcn3
 gain: 0.75
 start_loss_from_epoch: 0
 
@@ -19,7 +19,7 @@ xlayers: 5
 rlayers: 5
 
 # training hyperparameters
-batch_size: 2 # hast to be 1/2 of normal batch because pairs = True
+batch_size: 12 # hast to be 1/2 of normal batch because pairs = True
 optim: bert
 lr: 0.00005
 epochs: 4
