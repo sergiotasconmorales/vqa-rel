@@ -6,7 +6,7 @@ import torch
 from torch.nn import ReLU
 import numpy as np
 
-path_pred = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_024_hpc'
+path_pred = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_028_hpc'
 path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_noeq'
 
 pred_name =  'val_predict.json'
@@ -105,5 +105,5 @@ for i in range(correct_main.shape[0]):
     correct_sub[i, 0] = torch.eq(torch.tensor(sub_ans_pred), torch.tensor(sub_ans_gt))
 
 rels_onehot.scatter_(1, rels_int, 1)
-c = compute_consistency_rels(correct_main, correct_sub, rels_onehot)
+c = compute_consistency_rels(correct_main, correct_sub, rels_onehot, return_indiv=True)
 print('Consistency:', c)

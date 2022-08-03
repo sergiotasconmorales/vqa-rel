@@ -50,9 +50,8 @@ def get_data_tuple(splits: str, bs:int, shuffle=False, drop_last=False) -> DataT
 
 def consistency_loss(prob, target, rel, epoch, cnst_fcn='fcn1'):
     assert prob.shape[0] == target.shape[0] == rel.shape[0]
-    if torch.sum(rel) == 2*rel.shape[0] or epoch<=2: # no useful pairs
+    if torch.sum(rel) == 2*rel.shape[0] or epoch<args.start_loss_from: # no useful pairs
         return torch.tensor(0)
-    print('Now using consistency term')
     # get main and sub parts of everything
     prob_main = prob[::2, :]
     prob_sub = prob[1::2, :]
@@ -179,7 +178,7 @@ class VQA:
                 f.write(log_str)
                 f.flush()
 
-        #self.save("LAST")
+        self.save("LAST")
 
     def predict(self, eval_tuple: DataTuple, dump=None):
         """
@@ -206,7 +205,6 @@ class VQA:
         return quesid2ans
 
     def evaluate(self, eval_tuple: DataTuple, dump=None):
-        print(type(eval_tuple).__name__) # DEBUG
         """Evaluate all data in data_tuple."""
         quesid2ans = self.predict(eval_tuple, dump)
         return eval_tuple.evaluator.evaluate(quesid2ans)
@@ -241,7 +239,7 @@ if __name__ == "__main__":
     config, exp_name = read_config(args.path_config, return_config_name=True)
     # Update args with info from config
     update_args(args, config, exp_name)
-
+ 
     print("Experiment for config file:", exp_name)
 
     # Build Class
@@ -255,7 +253,7 @@ if __name__ == "__main__":
     # Test or Train
     if args.test is not None:
         # load weights of this config file
-        vqa.load(os.path.join(args.output, 'BEST')) 
+        vqa.load(os.path.join(args.output, args.infer_with)) 
         args.fast = args.tiny = False       # Always loading all data in test 
         if 'test' in args.test:
             vqa.predict(
