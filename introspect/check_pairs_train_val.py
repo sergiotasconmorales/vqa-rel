@@ -7,7 +7,7 @@ import os
 import torch
 
 path_introspect = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_noeq'
-path_exp = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_041_hpc'
+path_exp = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_006_hpc'
 
 if not os.path.exists(jp(path_exp, 'id2inc.pt')):
     raise FileNotFoundError
