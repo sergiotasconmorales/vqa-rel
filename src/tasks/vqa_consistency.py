@@ -2,12 +2,13 @@
 
 from os.path import join as jp
 import json
+from venv import main
 import torch
 from torch.nn import ReLU
 import numpy as np
 
-path_pred = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_030_hpc'
-path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_noeq'
+path_pred = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_032_hpc'
+path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_noeq_faulty'
 
 pred_name =  'val_predict.json'
 qa_name = 'val.json'
@@ -53,7 +54,9 @@ def compute_consistency_rels(correct_main, correct_sub, rels, return_indiv=False
     c = 1 - total_inconsistencies/torch.sum(rels[:,:3])
 
     if return_indiv:
-        return 100*c.item(), {'<--': float(100*necessary_term/total_inconsistencies), '-->': float(100*sufficient_term/total_inconsistencies), '<->': float(100*equivalent_term/total_inconsistencies)}
+        masked = masked1 + masked2 + masked3
+        return 100*c.item(), masked
+        #return 100*c.item(), {'<--': float(100*necessary_term/total_inconsistencies), '-->': float(100*sufficient_term/total_inconsistencies), '<->': float(100*equivalent_term/total_inconsistencies)}
     else:
         return 100*c.item()
 
@@ -79,6 +82,8 @@ qa_with_rel = [e for e in qa if 'rel' in e]
 
 correct_main = torch.LongTensor(len(qa_with_rel), 1)
 correct_sub = torch.LongTensor(len(qa_with_rel), 1)
+question_ids_main = torch.LongTensor(len(qa_with_rel),)
+question_ids_sub = torch.LongTensor(len(qa_with_rel),)
 rels_int = torch.LongTensor(len(qa_with_rel), 1).zero_()
 rels_onehot = torch.LongTensor(len(qa_with_rel), 4)
 rels_onehot.zero_()
@@ -93,7 +98,9 @@ def get_ans(dict_labels):
 for i in range(correct_main.shape[0]):
     rels_int[i] = rels_dict[qa_with_rel[i]['rel']]
     main_id = qa_with_rel[i]['parent']
+    question_ids_main[i] = main_id
     sub_id = qa_with_rel[i]['question_id']
+    question_ids_sub[i] = sub_id
 
     main_ans_gt = get_ans(qa_with_rel[i]['label'])
     sub_ans_gt = get_ans(qaid2label[main_id])
@@ -105,5 +112,5 @@ for i in range(correct_main.shape[0]):
     correct_sub[i, 0] = torch.eq(torch.tensor(sub_ans_pred), torch.tensor(sub_ans_gt))
 
 rels_onehot.scatter_(1, rels_int, 1)
-c = compute_consistency_rels(correct_main, correct_sub, rels_onehot, return_indiv=True)
+c, inc_idx = compute_consistency_rels(correct_main, correct_sub, rels_onehot, return_indiv=True)
 print('Consistency:', c)

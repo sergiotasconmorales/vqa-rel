@@ -75,10 +75,17 @@ def consistency_loss(prob, target, rel, epoch, cnst_fcn='fcn1'):
     if cnst_fcn == 'fcn1':
         value = torch.median((torch.log(1-p + EPSILON)*torch.log(1-q + EPSILON))[torch.where(flag_valid>0)])
     elif cnst_fcn == 'fcn2':
-        sigma = 0.4
+        sigma = 1.0
         value =  torch.median(torch.exp(-((p - 1)**2 + (q - 1)**2)/(2*sigma**2))[torch.where(flag_valid>0)])
     else:
         value = torch.median((-p*torch.log(1-q + EPSILON) - q*torch.log(1-p + EPSILON))[torch.where(flag_valid>0)])
+
+    if torch.isnan(value):
+        print('NaN found, info stored at:', os.getcwd())
+        to_save = {'prob': prob, 'target': target, 'rel': rel, 'epoch': epoch, 'cnst_fcn': cnst_fcn}
+        with open('info_nan.json', 'w') as f:
+            json.dump(to_save, f)
+        raise ValueError('NaN found in loss term')
 
     return value
 
