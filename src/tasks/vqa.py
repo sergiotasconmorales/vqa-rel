@@ -47,7 +47,6 @@ def get_data_tuple(splits: str, bs:int, shuffle=False, drop_last=False) -> DataT
     return DataTuple(dataset=dset, loader=data_loader, evaluator=evaluator)
 
 
-
 def consistency_loss(prob, target, rel, epoch, cnst_fcn='fcn1'):
     assert prob.shape[0] == target.shape[0] == rel.shape[0]
     if torch.sum(rel) == 2*rel.shape[0] or epoch<args.start_loss_from_epoch: # no useful pairs
