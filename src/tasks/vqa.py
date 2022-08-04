@@ -20,7 +20,7 @@ from tasks.vqa_model import VQAModel
 from tasks.vqa_data import VQADataset, VQADatasetPairs, VQATorchDataset, VQATorchDatasetPairs, VQAEvaluator, collater_pairs
 
 DataTuple = collections.namedtuple("DataTuple", 'dataset loader evaluator')
-EPSILON = 1e-10 
+EPSILON = torch.tensor(1e-10)
 
 def get_data_tuple(splits: str, bs:int, shuffle=False, drop_last=False) -> DataTuple:
     if 'pairs' in args:
@@ -70,6 +70,10 @@ def consistency_loss(prob, target, rel, epoch, cnst_fcn='fcn1'):
     p[rel_red==1] = (prob_main[rel_red==1]*(target_main[rel_red==1]>0).to(torch.float32)).sum(1)
     q[rel_red==1] = 1 - (prob_sub[rel_red==1]*(target_sub[rel_red==1]>0).to(torch.float32)).sum(1)
 
+    # clip p and q to avoid NaN
+    p = torch.clip(p, min=0, max=1)
+    q = torch.clip(q, min=0, max=1)
+
     flag_valid = (rel_red<2).to(torch.int64)
 
     if cnst_fcn == 'fcn1':
@@ -83,7 +87,7 @@ def consistency_loss(prob, target, rel, epoch, cnst_fcn='fcn1'):
     if torch.isnan(value):
         print('NaN found, info stored at:', os.getcwd())
         to_save = {'prob': prob, 'target': target, 'rel': rel, 'epoch': epoch, 'cnst_fcn': cnst_fcn}
-        torch.save(to_save, os.path.join(args.output, 'info_nan.json'))
+        torch.save(to_save, os.path.join(args.output, 'info_nan.pt'))
         raise ValueError('NaN found in loss term')
 
     return value
@@ -158,7 +162,7 @@ class VQA:
                 if 'cnst_fcn' in args: 
                     gain = getattr(args, 'gain')
                     cons_term = consistency_loss(softmax(logit), target, rel, epoch, cnst_fcn = args.cnst_fcn)
-                    print(loss.item(), cons_term.item())
+                    # print(loss.item(), cons_term.item())
                     loss = (loss + gain*cons_term)*logit.size(1)
                     consistency_log[epoch].append(cons_term.detach().cpu().item())
                 else:
