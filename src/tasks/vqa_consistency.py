@@ -7,7 +7,7 @@ import torch
 from torch.nn import ReLU
 import numpy as np
 
-path_pred = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_032_hpc'
+path_pred = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_016_hpc'
 path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_noeq_faulty'
 
 pred_name =  'val_predict.json'
@@ -114,3 +114,6 @@ for i in range(correct_main.shape[0]):
 rels_onehot.scatter_(1, rels_int, 1)
 c, inc_idx = compute_consistency_rels(correct_main, correct_sub, rels_onehot, return_indiv=True)
 print('Consistency:', c)
+
+dict_id_cons = {question_ids_sub[i].item(): inc_idx[i].item() for i in range(inc_idx.shape[0])}
+torch.save(dict_id_cons, jp(path_pred, 'id2inc.pt'))

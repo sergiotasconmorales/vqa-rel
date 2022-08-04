@@ -83,8 +83,7 @@ def consistency_loss(prob, target, rel, epoch, cnst_fcn='fcn1'):
     if torch.isnan(value):
         print('NaN found, info stored at:', os.getcwd())
         to_save = {'prob': prob, 'target': target, 'rel': rel, 'epoch': epoch, 'cnst_fcn': cnst_fcn}
-        with open('info_nan.json', 'w') as f:
-            json.dump(to_save, f)
+        torch.save(to_save, os.path.join(args.output, 'info_nan.json'))
         raise ValueError('NaN found in loss term')
 
     return value
