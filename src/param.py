@@ -33,6 +33,11 @@ def get_optimizer(optim):
 def parse_args():
     parser = argparse.ArgumentParser()
 
+    # Config paths
+    parser.add_argument("--path_config", default='config/config_001.yaml')
+    parser.add_argument("--path_vqa_data", default='/home/sergio814/Documents/PhD/code/data/lxmert/data/vqa')
+    parser.add_argument("--path_image_features", default='/home/sergio814/Documents/PhD/code/data/lxmert/data/mscoco_imgfeat')
+
     # Data Splits
     parser.add_argument("--train", default='train')
     parser.add_argument("--valid", default='valid')

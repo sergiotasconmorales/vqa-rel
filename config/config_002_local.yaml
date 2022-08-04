@@ -1,0 +1,22 @@
+# path definitions
+output: /home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa
+path_vqa_data: /home/sergio814/Documents/PhD/code/data/lxmert/data/introspect
+path_image_features: /home/sergio814/Documents/PhD/code/data/lxmert/data/mscoco_imgfeat
+load_lxmert_qa: /home/sergio814/Documents/PhD/code/data/lxmert/snap/pretrained/model
+
+# what to train on
+train: train
+valid: val
+tiny: True
+
+# model properties
+llayers: 9
+xlayers: 5
+rlayers: 5
+
+# training hyperparameters
+batch_size: 32
+optim: bert
+lr: 0.00005
+epochs: 4
+tqdm: True

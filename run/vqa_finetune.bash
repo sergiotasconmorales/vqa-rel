@@ -2,7 +2,7 @@
 name=$2
 
 # Save logs and models under snap/vqa; make backup.
-output=snap/vqa/$name
+output=/home/sergio814/Documents/PhD/code/data/lxmert/snap/vqa/$name
 mkdir -p $output/src
 cp -r src/* $output/src/
 cp $0 $output/run.bash

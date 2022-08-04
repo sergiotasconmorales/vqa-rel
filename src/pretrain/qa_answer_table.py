@@ -25,7 +25,7 @@ class AnswerTable:
     }
 
     def __init__(self, dsets=None):
-        self.all_ans = json.load(open("data/lxmert/all_ans.json"))
+        self.all_ans = json.load(open("vqa-rel/data/lxmert/all_ans.json"))
         if dsets is not None:
             dsets = set(dsets)
             # If the answer is used in the dsets
