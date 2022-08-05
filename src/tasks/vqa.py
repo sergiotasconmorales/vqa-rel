@@ -22,6 +22,8 @@ from tasks.vqa_data import VQADataset, VQADatasetPairs, VQATorchDataset, VQATorc
 DataTuple = collections.namedtuple("DataTuple", 'dataset loader evaluator')
 EPSILON = torch.tensor(1e-10)
 
+assert torch.cuda.is_available() == True # problem with Ubelix
+
 def get_data_tuple(splits: str, bs:int, shuffle=False, drop_last=False) -> DataTuple:
     if 'pairs' in args:
         if args.pairs and args.test is None: 
