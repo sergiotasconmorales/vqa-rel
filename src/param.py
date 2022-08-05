@@ -100,9 +100,11 @@ def parse_args():
     args.optimizer = get_optimizer(args.optim)
 
     # Set seeds
-    torch.manual_seed(args.seed)
-    random.seed(args.seed)
-    np.random.seed(args.seed)
+    if args.seed == 0:
+        seed = random.randint(1000, 1999)
+        torch.manual_seed(seed)
+        random.seed(seed)
+        np.random.seed(seed)
 
     return args
 

@@ -24,4 +24,5 @@ batch_size: 16 # hast to be 1/2 of normal batch because pairs = True
 optim: bert
 lr: 0.00005
 epochs: 4
+seed: 0
 tqdm: True
