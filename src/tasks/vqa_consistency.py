@@ -7,8 +7,9 @@ import torch
 from torch.nn import ReLU
 import numpy as np
 
-path_pred = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_043_hpc'
-path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_noeq_faulty'
+path_pred = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/vqa2introspect/config_009_hpc'
+#path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_noeq_faulty'
+path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/vqa2introspect'
 
 pred_name =  'val_predict.json'
 qa_name = 'val.json'
