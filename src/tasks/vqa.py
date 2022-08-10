@@ -80,7 +80,7 @@ def consistency_loss(prob, target, rel, epoch, cnst_fcn='fcn1'):
     if cnst_fcn == 'fcn1':
         value = torch.mean((torch.log(1-p + EPSILON)*torch.log(1-q + EPSILON))[torch.where(flag_valid>0)])
     elif cnst_fcn == 'fcn2':
-        sigma = 1.0
+        sigma = 0.8
         value =  torch.mean(torch.exp(-((p - 1)**2 + (q - 1)**2)/(2*sigma**2))[torch.where(flag_valid>0)])
     else:
         value = torch.mean((-p*torch.log(1-q + EPSILON) - q*torch.log(1-p + EPSILON))[torch.where(flag_valid>0)])

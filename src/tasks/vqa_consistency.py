@@ -7,7 +7,7 @@ import torch
 from torch.nn import ReLU
 import numpy as np
 
-path_pred = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_050_hpc'
+path_pred = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_055_hpc'
 path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_noeq_faulty'
 #path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/vqa2introspect'
 
