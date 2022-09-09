@@ -11,6 +11,8 @@ pairs: True
 tiny: False
 cnst_fcn: fcn1
 gain: 0.0
+start_loss_from_epoch: 0
+infer_with: BEST # BEST or LAST
 
 # model properties
 llayers: 9
