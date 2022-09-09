@@ -7,14 +7,6 @@ import torch
 from torch.nn import ReLU
 import numpy as np
 
-path_pred = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_055_hpc'
-path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_noeq_faulty'
-#path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/vqa2introspect'
-
-pred_name =  'val_predict.json'
-qa_name = 'val.json'
-map_name = 'trainval_ans2label.json'
-
 
 def compute_consistency_rels(correct_main, correct_sub, rels, return_indiv=False):
     """Function to compute consistency taking into account the relationships between main and sub-question
@@ -56,65 +48,82 @@ def compute_consistency_rels(correct_main, correct_sub, rels, return_indiv=False
 
     if return_indiv:
         masked = masked1 + masked2 + masked3
-        return 100*c.item(), masked
+        return 100*c.item(), masked*rels[:,:3].sum(1), rels[:,:3].sum(1)
         #return 100*c.item(), {'<--': float(100*necessary_term/total_inconsistencies), '-->': float(100*sufficient_term/total_inconsistencies), '<->': float(100*equivalent_term/total_inconsistencies)}
     else:
         return 100*c.item()
 
-rels_dict = {'-->': 0, '<--': 1, '<->':2, '---':3, 'unk': 3}
+for i_exp in range(19, 20):
 
-# read qa
-with open(jp(path_qa, qa_name), 'r') as f:
-    qa = json.load(f)
-qaid2label = {e['question_id']: e['label'] for e in qa}
+    path_pred = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_{}_hpc'.format(str(i_exp).zfill(3))
+    path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_noeq_faulty'
+    #path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/vqa2introspect'
 
-# read preds
-with open(jp(path_pred, pred_name), 'r') as f:
-    pred = json.load(f)
+    pred_name =  'val_predict.json'
+    qa_name = 'val.json'
+    map_name = 'trainval_ans2label.json'
 
-# load map
-with open(jp(path_qa, map_name), 'r') as f:
-    ans2label = json.load(f)
 
-predid2ans = {e['question_id']: e['answer'] for e in pred}
+    rels_dict = {'-->': 0, '<--': 1, '<->':2, '---':3, 'unk': 3}
 
-# add predicted answers to qa
-qa_with_rel = [e for e in qa if 'rel' in e]
+    # read qa
+    with open(jp(path_qa, qa_name), 'r') as f:
+        qa = json.load(f)
+    qaid2label = {e['question_id']: e['label'] for e in qa}
 
-correct_main = torch.LongTensor(len(qa_with_rel), 1)
-correct_sub = torch.LongTensor(len(qa_with_rel), 1)
-question_ids_main = torch.LongTensor(len(qa_with_rel),)
-question_ids_sub = torch.LongTensor(len(qa_with_rel),)
-rels_int = torch.LongTensor(len(qa_with_rel), 1).zero_()
-rels_onehot = torch.LongTensor(len(qa_with_rel), 4)
-rels_onehot.zero_()
+    # read preds
+    with open(jp(path_pred, pred_name), 'r') as f:
+        pred = json.load(f)
 
-def get_ans(dict_labels):
-    # finds best answer: the one with highest score
-    ans_list = list(dict_labels.keys())
-    ans_scores = list(dict_labels.values())
-    index_max = np.argmax(ans_scores)
-    return ans2label[ans_list[index_max]]
+    # load map
+    with open(jp(path_qa, map_name), 'r') as f:
+        ans2label = json.load(f)
 
-for i in range(correct_main.shape[0]):
-    rels_int[i] = rels_dict[qa_with_rel[i]['rel']]
-    main_id = qa_with_rel[i]['parent']
-    question_ids_main[i] = main_id
-    sub_id = qa_with_rel[i]['question_id']
-    question_ids_sub[i] = sub_id
+    predid2ans = {e['question_id']: e['answer'] for e in pred}
 
-    main_ans_gt = get_ans(qa_with_rel[i]['label'])
-    sub_ans_gt = get_ans(qaid2label[main_id])
+    # add predicted answers to qa
+    qa_with_rel = [e for e in qa if 'rel' in e] # i.e. all sub-questions
 
-    main_ans_pred = ans2label[predid2ans[main_id]]
-    sub_ans_pred = ans2label[predid2ans[sub_id]]
+    correct_main = torch.LongTensor(len(qa_with_rel), 1)
+    correct_sub = torch.LongTensor(len(qa_with_rel), 1)
+    question_ids_main = torch.LongTensor(len(qa_with_rel),)
+    question_ids_sub = torch.LongTensor(len(qa_with_rel),)
+    rels_int = torch.LongTensor(len(qa_with_rel), 1).zero_()
+    rels_onehot = torch.LongTensor(len(qa_with_rel), 4)
+    rels_onehot.zero_()
 
-    correct_main[i, 0] = torch.eq(torch.tensor(main_ans_pred), torch.tensor(main_ans_gt))
-    correct_sub[i, 0] = torch.eq(torch.tensor(sub_ans_pred), torch.tensor(sub_ans_gt))
+    def get_ans(dict_labels):
+        # finds best answer: the one with highest score
+        ans_list = list(dict_labels.keys())
+        ans_scores = list(dict_labels.values())
+        index_max = np.argmax(ans_scores)
+        return ans2label[ans_list[index_max]]
 
-rels_onehot.scatter_(1, rels_int, 1)
-c, inc_idx = compute_consistency_rels(correct_main, correct_sub, rels_onehot, return_indiv=True)
-print('Consistency:', c)
 
-dict_id_cons = {question_ids_sub[i].item(): inc_idx[i].item() for i in range(inc_idx.shape[0])}
-torch.save(dict_id_cons, jp(path_pred, 'id2inc.pt'))
+    for i in range(correct_main.shape[0]):
+        sub_question = qa_with_rel[i]['sent']
+        rels_int[i] = rels_dict[qa_with_rel[i]['rel']]
+        main_id = qa_with_rel[i]['parent']
+        question_ids_main[i] = main_id
+        sub_id = qa_with_rel[i]['question_id']
+        question_ids_sub[i] = sub_id
+
+        main_ans_gt = get_ans(qaid2label[main_id])
+        sub_ans_gt = get_ans(qa_with_rel[i]['label'])
+
+        main_ans_pred = ans2label[predid2ans[main_id]]
+        sub_ans_pred = ans2label[predid2ans[sub_id]]
+
+        correct_main[i, 0] = torch.eq(torch.tensor(main_ans_pred), torch.tensor(main_ans_gt))
+        correct_sub[i, 0] = torch.eq(torch.tensor(sub_ans_pred), torch.tensor(sub_ans_gt))
+
+    rels_onehot.scatter_(1, rels_int, 1)
+    c, inc_idx, valid = compute_consistency_rels(correct_main, correct_sub, rels_onehot, return_indiv=True)
+    print('Consistency for exp {}:'.format(i_exp), c)
+
+    dict_id_cons = {question_ids_sub[i].item(): inc_idx[i].item() for i in range(inc_idx.shape[0])}
+    torch.save(dict_id_cons, jp(path_pred, 'id2inc.pt'))
+
+    # save valid
+    dict_id_valid = {question_ids_sub[i].item(): valid[i].item() for i in range(valid.shape[0])}
+    torch.save(dict_id_valid, jp(path_pred, 'id2valid.pt'))
