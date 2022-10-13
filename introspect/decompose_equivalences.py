@@ -6,7 +6,7 @@ import copy
 from tqdm import tqdm
 from os.path import join as jp
 
-path_data = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_noeq'
+path_data = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_no_eq_no_dup'
 subsets = ['train', 'val']
 new_len_new_q_id = 16 # ids in VQA2 have max length 9 and in introspect they have length 15, so it should be fine to use 16 to ensure unicity
 

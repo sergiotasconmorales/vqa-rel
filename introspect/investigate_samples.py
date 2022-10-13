@@ -15,13 +15,16 @@ from PIL import Image
 from matplotlib import pyplot as plt
 
 exp_before = '009' # baseline
-exp_after = '019' # with loss term
+exp_after = '030' # with loss term
 
 path_data = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_noeq_faulty'
 path_logs = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa'
 base_name = 'config_<>_hpc'
 path_images = '/home/sergio814/Documents/PhD/code/data/coco/images/val'
 path_save = jp(path_data, 'investigate_samples_' + exp_before + '_' + exp_after)
+# create path_save folder if it doesn't exist
+os.makedirs(path_save, exist_ok=True)
+
 
 # define paths
 path_before = jp(path_logs, base_name.replace('<>', exp_before))
@@ -138,7 +141,7 @@ for q_id in id2inc_before.keys():
         pass
 
 # now plot the pairs for the decrease case and save them.
-for pair in acc_decrease:
+for pair in tqdm(acc_decrease):
     id_main, id_sub = pair
     main_entry = id2entry[id_main]
     sub_entry = id2entry[id_sub]
@@ -173,8 +176,7 @@ for pair in acc_decrease:
     ax[1].axis('off')
     plt.suptitle('Relation: ' + sub_entry['rel'])
     plt.tight_layout()
-    plt.show()
-    #plt.savefig(jp(path_save, 'ic_accdecrease_{}_{}.png'.format(id_main, id_sub)))
+    #plt.show()
+    plt.savefig(jp(path_save, 'ic_accdecrease_{}_{}.png'.format(id_main, id_sub)))
+    plt.close()
     
-
-    a = 42

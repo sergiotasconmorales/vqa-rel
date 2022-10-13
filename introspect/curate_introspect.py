@@ -37,7 +37,7 @@ for s in subsets:
             data_vqa = json.load(f)
 
     # step 2: read introspect data
-    with open(jp(path_introspect, 'VQAIntrospect_{}_withidrelv1.0.json'.format(s)), 'r') as f:
+    with open(jp(path_introspect, 'VQAIntrospect_{}_no_duplicates_withidrelv1.0.json'.format(s)), 'r') as f:
         data_introspect = json.load(f)
 
     # step 3: if train, check that all introspect main questions are in the train set of VQA.

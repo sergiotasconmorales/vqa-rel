@@ -53,7 +53,7 @@ def compute_consistency_rels(correct_main, correct_sub, rels, return_indiv=False
     else:
         return 100*c.item()
 
-for i_exp in range(63, 68):
+for i_exp in range(63, 64):
 
     path_pred = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_{}_hpc'.format(str(i_exp).zfill(3))
     path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_noeq'
