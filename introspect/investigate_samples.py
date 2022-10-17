@@ -14,10 +14,10 @@ from os.path import join as jp
 from PIL import Image
 from matplotlib import pyplot as plt
 
-exp_before = '009' # baseline
-exp_after = '030' # with loss term
+exp_before = '069' # baseline
+exp_after = '073' # with loss term
 
-path_data = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_noeq_faulty'
+path_data = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_no_eq_no_dup'
 path_logs = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa'
 base_name = 'config_<>_hpc'
 path_images = '/home/sergio814/Documents/PhD/code/data/coco/images/val'
@@ -40,7 +40,7 @@ def get_ans(dict_labels):
 # read validation json file
 with open(jp(path_data, 'val.json'), 'r') as f:
     val = json.load(f)
-    id2gtans = {e['question_id']: get_ans(e['label']) for e in val}
+    id2gtans = {e['question_id']: get_ans(e['label']) for e in val if len(e['label'])>0}
     id2entry = {e['question_id']: e for e in val}
 
 # read answers from path_before and path_after

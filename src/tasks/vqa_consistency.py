@@ -53,10 +53,18 @@ def compute_consistency_rels(correct_main, correct_sub, rels, return_indiv=False
     else:
         return 100*c.item()
 
-for i_exp in range(63, 64):
+def get_ans(dict_labels):
+    # finds best answer: the one with highest score
+    ans_list = list(dict_labels.keys())
+    ans_scores = list(dict_labels.values())
+    index_max = np.argmax(ans_scores)
+    return ans2label[ans_list[index_max]]
+
+
+for i_exp in range(81, 82):
 
     path_pred = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_{}_hpc'.format(str(i_exp).zfill(3))
-    path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_noeq'
+    path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_no_eq_no_dup'
     #path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/vqa2introspect'
 
     pred_name =  'val_predict.json'
@@ -92,13 +100,6 @@ for i_exp in range(63, 64):
     rels_onehot = torch.LongTensor(len(qa_with_rel), 4)
     rels_onehot.zero_()
 
-    def get_ans(dict_labels):
-        # finds best answer: the one with highest score
-        ans_list = list(dict_labels.keys())
-        ans_scores = list(dict_labels.values())
-        index_max = np.argmax(ans_scores)
-        return ans2label[ans_list[index_max]]
-
 
     for i in range(correct_main.shape[0]):
         sub_question = qa_with_rel[i]['sent']
@@ -108,7 +109,11 @@ for i_exp in range(63, 64):
         sub_id = qa_with_rel[i]['question_id']
         question_ids_sub[i] = sub_id
 
-        main_ans_gt = get_ans(qaid2label[main_id])
+        if len(qaid2label[main_id])<1:
+            main_ans_gt = 0
+        else:
+            main_ans_gt = get_ans(qaid2label[main_id])
+
         sub_ans_gt = get_ans(qa_with_rel[i]['label'])
 
         main_ans_pred = ans2label[predid2ans[main_id]]

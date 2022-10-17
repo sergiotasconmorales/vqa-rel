@@ -61,6 +61,9 @@ for s in subsets:
         temp_dict = id2entry[int(k)]
         # add fields
         temp_dict['role'] = 'main'
+        #* adding condition so that if main question's label is empty (many in official LXMERT VQA data) then exclude it from Introspect
+        if len(temp_dict['label']) == 0:
+            continue
         new_introspect.append(temp_dict)
         introspect_entries = v['introspect']
         if len(introspect_entries) == 0: # no sub-questions
