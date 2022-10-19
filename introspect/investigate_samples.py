@@ -17,7 +17,7 @@ from matplotlib import pyplot as plt
 exp_before = '069' # baseline
 exp_after = '073' # with loss term
 
-path_data = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_no_eq_no_dup'
+path_data = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_noeq_nodup'
 path_logs = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa'
 base_name = 'config_<>_hpc'
 path_images = '/home/sergio814/Documents/PhD/code/data/coco/images/val'
