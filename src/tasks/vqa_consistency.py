@@ -61,7 +61,7 @@ def get_ans(dict_labels):
     return ans2label[ans_list[index_max]]
 
 
-for i_exp in range(89, 94):
+for i_exp in range(94, 95):
 
     path_pred = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_{}_hpc'.format(str(i_exp).zfill(3))
     path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_noeq_nodup'
@@ -70,7 +70,6 @@ for i_exp in range(89, 94):
     pred_name =  'val_predict.json'
     qa_name = 'val.json'
     map_name = 'trainval_ans2label.json'
-
 
     rels_dict = {'-->': 0, '<--': 1, '<->':2, '---':3, 'unk': 3}
 

@@ -62,6 +62,8 @@ def consistency_loss(prob, target, rel, epoch, cnst_fcn='fcn1'):
 
     p = torch.zeros_like(rel_red, dtype=torch.float32).cuda()
     q = torch.zeros_like(rel_red, dtype=torch.float32).cuda()
+    p_ = torch.zeros_like(rel_red, dtype=torch.float32).cuda()
+    q_ = torch.zeros_like(rel_red, dtype=torch.float32).cuda()
 
     # For <-- relations (0 index in rel)
     p[rel_red==0] = 1 - (prob_main[rel_red==0]*(target_main[rel_red==0]>0).to(torch.float32)).sum(1)
@@ -71,19 +73,28 @@ def consistency_loss(prob, target, rel, epoch, cnst_fcn='fcn1'):
     p[rel_red==1] = (prob_main[rel_red==1]*(target_main[rel_red==1]>0).to(torch.float32)).sum(1)
     q[rel_red==1] = 1 - (prob_sub[rel_red==1]*(target_sub[rel_red==1]>0).to(torch.float32)).sum(1)
 
+    # For <-> relations (3 index in rel)
+    p[rel_red==3] = 1 - (prob_main[rel_red==3]*(target_main[rel_red==3]>0).to(torch.float32)).sum(1)
+    q[rel_red==3] = (prob_sub[rel_red==3]*(target_sub[rel_red==3]>0).to(torch.float32)).sum(1)
+    p_[rel_red==3] = (prob_main[rel_red==3]*(target_main[rel_red==3]>0).to(torch.float32)).sum(1)
+    q_[rel_red==3] = 1 - (prob_sub[rel_red==3]*(target_sub[rel_red==3]>0).to(torch.float32)).sum(1)
+
     # clip p and q to avoid NaN
     p = torch.clip(p, min=0, max=1)
     q = torch.clip(q, min=0, max=1)
+    p_ = torch.clip(p_, min=0, max=1)
+    q_ = torch.clip(q_, min=0, max=1)
 
-    flag_valid = (rel_red<2).to(torch.int64)
+    flag_valid = (rel_red!=2).to(torch.int64)
 
     if cnst_fcn == 'fcn1':
-        value = torch.mean((torch.log(1-p + EPSILON)*torch.log(1-q + EPSILON))[torch.where(flag_valid>0)])
+        value = torch.mean((torch.log(1-p + EPSILON)*torch.log(1-q + EPSILON))[torch.where(flag_valid>0)]) + torch.mean((torch.log(1-p_ + EPSILON)*torch.log(1-q_ + EPSILON))[torch.where(flag_valid>0)])
     elif cnst_fcn == 'fcn2':
         sigma = 0.8
         value =  torch.mean(torch.exp(-((p - 1)**2 + (q - 1)**2)/(2*sigma**2))[torch.where(flag_valid>0)])
     else:
-        value = torch.mean((-p*torch.log(1-q + EPSILON) - q*torch.log(1-p + EPSILON))[torch.where(flag_valid>0)])
+        func = -p*torch.log(1-q + EPSILON) - q*torch.log(1-p + EPSILON) - p_*torch.log(1-q_ + EPSILON) - q_*torch.log(1-p_ + EPSILON)
+        return torch.mean(func[torch.where(flag_valid>0)])
 
     if torch.isnan(value):
         print('NaN found, info stored at:', os.getcwd())
