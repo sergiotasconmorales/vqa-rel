@@ -61,10 +61,10 @@ def get_ans(dict_labels):
     return ans2label[ans_list[index_max]]
 
 
-for i_exp in range(94, 95):
+for i_exp in range(107, 114):
 
     path_pred = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_{}_hpc'.format(str(i_exp).zfill(3))
-    path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_noeq_nodup'
+    path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_nodup'
     #path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/vqa2introspect'
 
     pred_name =  'val_predict.json'
