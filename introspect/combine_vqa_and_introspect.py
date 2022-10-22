@@ -10,7 +10,7 @@ path_data = '/home/sergio814/Documents/PhD/code/data/lxmert/data'
 path_output = jp(path_data, 'vqa2introspect')
 os.makedirs(path_output, exist_ok=True)
 vqa_folder_name = 'vqa'
-introspect_folder_name = 'introspect_noeq'
+introspect_folder_name = 'introspect_nodup'
 
 subsets = ['train', 'val']
 
