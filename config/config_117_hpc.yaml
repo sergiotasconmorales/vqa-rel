@@ -1,6 +1,6 @@
 # path definitions
 output: logs/lxmert/snap/vqa
-path_vqa_data: /storage/workspaces/artorg_aimi/ws_00000/sergio/lxmert/data/introspect_noeq_nodup
+path_vqa_data: /storage/workspaces/artorg_aimi/ws_00000/sergio/lxmert/data/introspect_nodup
 path_image_features: /storage/workspaces/artorg_aimi/ws_00000/sergio/lxmert/data/mscoco_imgfeat
 #load_lxmert_qa: /storage/workspaces/artorg_aimi/ws_00000/sergio/lxmert/snap/pretrained/model
 
