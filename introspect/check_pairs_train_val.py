@@ -6,8 +6,8 @@ from os.path import join as jp
 import os
 import torch
 
-path_introspect = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_noeq_faulty'
-path_exp = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_016_hpc'
+path_introspect = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_nodup'
+path_exp = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_113_hpc'
 
 if not os.path.exists(jp(path_exp, 'id2inc.pt')):
     raise FileNotFoundError
