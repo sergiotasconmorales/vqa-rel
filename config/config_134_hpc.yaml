@@ -1,16 +1,16 @@
 # path definitions
 output: logs/lxmert/snap/vqa
-path_vqa_data: /home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_nodup
-path_image_features: /home/sergio814/Documents/PhD/code/data/lxmert/data/mscoco_imgfeat
+path_vqa_data: /storage/workspaces/artorg_aimi/ws_00000/sergio/lxmert/data/introspect_nodup
+path_image_features: /storage/workspaces/artorg_aimi/ws_00000/sergio/lxmert/data/mscoco_imgfeat
 #load_lxmert_qa: /storage/workspaces/artorg_aimi/ws_00000/sergio/lxmert/snap/pretrained/model
 
 # what to train on
 train: train
 valid: val
 pairs: True
-tiny: True
-cnst_fcn: fcn1
-gain: 10.0
+tiny: False
+cnst_fcn: fcn3
+gain: 0.01
 start_loss_from_epoch: 0
 infer_with: BEST # BEST or LAST
 
@@ -23,5 +23,6 @@ rlayers: 5
 batch_size: 16 # hast to be 1/2 of normal batch because pairs = True
 optim: bert
 lr: 0.00005
-epochs: 4
+epochs: 5
+seed: 0
 tqdm: True
