@@ -230,7 +230,7 @@ class VQA:
                 loss = self.bce_loss(logit, target)
                 if 'cnst_fcn' in args: 
                     gain = getattr(args, 'gain')
-                    cons_term = consistency_loss(softmax(logit), softmax(target, dim=1), rel, epoch, cnst_fcn = args.cnst_fcn)
+                    cons_term = consistency_loss(softmax(logit), softmax(target), rel, epoch, cnst_fcn = args.cnst_fcn)
                     # print(loss.item(), cons_term.item())
                     bce_log[epoch].append(loss.detach().cpu().item())
                     loss = (loss + gain*cons_term)*logit.size(1) 
