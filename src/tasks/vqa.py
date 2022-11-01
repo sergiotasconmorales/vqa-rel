@@ -149,7 +149,7 @@ def consistency_loss1(prob, target, rel, epoch, cnst_fcn='fcn3'):
         value =  torch.mean(torch.exp(-((p - 1)**2 + (q - 1)**2)/(2*sigma**2))[torch.where(flag_valid>0)])
     else:
         func = -p*torch.log(1-q + EPSILON) - q*torch.log(1-p + EPSILON) - p_*torch.log(1-q_ + EPSILON) - q_*torch.log(1-p_ + EPSILON)
-        return torch.median(func[torch.where(flag_valid>0)]) 
+        return torch.mean(func[torch.where(flag_valid>0)]) 
 
     if torch.isnan(value):
         print('NaN found, info stored at:', os.getcwd())
