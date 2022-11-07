@@ -5,9 +5,9 @@ import json
 from os.path import join as jp
 from matplotlib import pyplot as plt
 
-exp_name = '031'
-path_logs = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/vqa2introspect'
-gain = 1
+exp_name = '193'
+path_logs = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa'
+gain = 0.00001
 
 # open consistency_log.json
 with open(jp(path_logs, 'config_{}_hpc'.format(exp_name),'consistency_log.json')) as f:
