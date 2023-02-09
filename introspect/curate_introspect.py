@@ -37,7 +37,7 @@ for s in subsets:
             data_vqa = json.load(f)
 
     # step 2: read introspect data
-    with open(jp(path_introspect, 'VQAIntrospect_{}_withidrelv1.0.json'.format(s)), 'r') as f:
+    with open(jp(path_introspect, 'VQAIntrospect_{}_no_duplicates_withidrelv1.0.json'.format(s)), 'r') as f:
         data_introspect = json.load(f)
 
     # step 3: if train, check that all introspect main questions are in the train set of VQA.
@@ -61,6 +61,9 @@ for s in subsets:
         temp_dict = id2entry[int(k)]
         # add fields
         temp_dict['role'] = 'main'
+        #* adding condition so that if main question's label is empty (many in official LXMERT VQA data) then exclude it from Introspect
+        if len(temp_dict['label']) == 0:
+            continue
         new_introspect.append(temp_dict)
         introspect_entries = v['introspect']
         if len(introspect_entries) == 0: # no sub-questions

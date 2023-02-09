@@ -1,0 +1,28 @@
+# path definitions
+output: /storage/workspaces/artorg_aimi/ws_00000/sergio/lxmert/snap/vqa/vqa2introspect
+path_vqa_data: /storage/workspaces/artorg_aimi/ws_00000/sergio/lxmert/data/vqa2introspect
+path_image_features: /storage/workspaces/artorg_aimi/ws_00000/sergio/lxmert/data/mscoco_imgfeat
+#load_lxmert_qa: /storage/workspaces/artorg_aimi/ws_00000/sergio/lxmert/snap/pretrained/model
+
+# what to train on
+train: train
+valid: val
+pairs: True
+tiny: False
+cnst_fcn: fcn3
+gain: 0.00009
+start_loss_from_epoch: 0
+infer_with: BEST # BEST or LAST
+
+# model properties
+llayers: 9
+xlayers: 5
+rlayers: 5
+
+# training hyperparameters
+batch_size: 16 # hast to be 1/2 of normal batch because pairs = True
+optim: bert
+lr: 0.00005
+epochs: 10
+seed: 0
+tqdm: True

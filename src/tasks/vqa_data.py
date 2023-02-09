@@ -198,7 +198,7 @@ class VQATorchDatasetPairs(Dataset):
         super().__init__()
         self.raw_dataset = dataset
 
-        self.map_rel_index = {'---': 2, '-->': 1, '<--': 0, 'unk': 2}
+        self.map_rel_index = {'---': 2, '-->': 1, '<--': 0, 'unk': 2, '<->': 3}
 
         if args.tiny:
             topk = TINY_IMG_NUM

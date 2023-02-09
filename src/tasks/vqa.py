@@ -11,6 +11,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data.dataloader import DataLoader
 from torch.utils.data import default_collate
+from torch.nn.functional import one_hot
 from tqdm import tqdm
 from aux.io import read_config, update_args
 
@@ -21,6 +22,8 @@ from tasks.vqa_data import VQADataset, VQADatasetPairs, VQATorchDataset, VQATorc
 
 DataTuple = collections.namedtuple("DataTuple", 'dataset loader evaluator')
 EPSILON = torch.tensor(1e-10)
+
+assert torch.cuda.is_available() == True # problem with Ubelix
 
 def get_data_tuple(splits: str, bs:int, shuffle=False, drop_last=False) -> DataTuple:
     if 'pairs' in args:
@@ -47,7 +50,6 @@ def get_data_tuple(splits: str, bs:int, shuffle=False, drop_last=False) -> DataT
     return DataTuple(dataset=dset, loader=data_loader, evaluator=evaluator)
 
 
-
 def consistency_loss(prob, target, rel, epoch, cnst_fcn='fcn1'):
     assert prob.shape[0] == target.shape[0] == rel.shape[0]
     if torch.sum(rel) == 2*rel.shape[0] or epoch<args.start_loss_from_epoch: # no useful pairs
@@ -61,6 +63,8 @@ def consistency_loss(prob, target, rel, epoch, cnst_fcn='fcn1'):
 
     p = torch.zeros_like(rel_red, dtype=torch.float32).cuda()
     q = torch.zeros_like(rel_red, dtype=torch.float32).cuda()
+    p_ = torch.zeros_like(rel_red, dtype=torch.float32).cuda()
+    q_ = torch.zeros_like(rel_red, dtype=torch.float32).cuda()
 
     # For <-- relations (0 index in rel)
     p[rel_red==0] = 1 - (prob_main[rel_red==0]*(target_main[rel_red==0]>0).to(torch.float32)).sum(1)
@@ -70,19 +74,28 @@ def consistency_loss(prob, target, rel, epoch, cnst_fcn='fcn1'):
     p[rel_red==1] = (prob_main[rel_red==1]*(target_main[rel_red==1]>0).to(torch.float32)).sum(1)
     q[rel_red==1] = 1 - (prob_sub[rel_red==1]*(target_sub[rel_red==1]>0).to(torch.float32)).sum(1)
 
+    # For <-> relations (3 index in rel)
+    p[rel_red==3] = 1 - (prob_main[rel_red==3]*(target_main[rel_red==3]>0).to(torch.float32)).sum(1)
+    q[rel_red==3] = (prob_sub[rel_red==3]*(target_sub[rel_red==3]>0).to(torch.float32)).sum(1)
+    p_[rel_red==3] = (prob_main[rel_red==3]*(target_main[rel_red==3]>0).to(torch.float32)).sum(1)
+    q_[rel_red==3] = 1 - (prob_sub[rel_red==3]*(target_sub[rel_red==3]>0).to(torch.float32)).sum(1)
+
     # clip p and q to avoid NaN
     p = torch.clip(p, min=0, max=1)
     q = torch.clip(q, min=0, max=1)
+    p_ = torch.clip(p_, min=0, max=1)
+    q_ = torch.clip(q_, min=0, max=1)
 
-    flag_valid = (rel_red<2).to(torch.int64)
+    flag_valid = (rel_red!=2).to(torch.int64)
 
     if cnst_fcn == 'fcn1':
-        value = torch.median((torch.log(1-p + EPSILON)*torch.log(1-q + EPSILON))[torch.where(flag_valid>0)])
+        value = torch.mean((torch.log(1-p + EPSILON)*torch.log(1-q + EPSILON))[torch.where(flag_valid>0)]) + torch.mean((torch.log(1-p_ + EPSILON)*torch.log(1-q_ + EPSILON))[torch.where(flag_valid>0)])
     elif cnst_fcn == 'fcn2':
-        sigma = 1.0
-        value =  torch.median(torch.exp(-((p - 1)**2 + (q - 1)**2)/(2*sigma**2))[torch.where(flag_valid>0)])
+        sigma = 0.8
+        value =  torch.mean(torch.exp(-((p - 1)**2 + (q - 1)**2)/(2*sigma**2))[torch.where(flag_valid>0)])
     else:
-        value = torch.median((-p*torch.log(1-q + EPSILON) - q*torch.log(1-p + EPSILON))[torch.where(flag_valid>0)])
+        func = -p*torch.log(1-q + EPSILON) - q*torch.log(1-p + EPSILON) - p_*torch.log(1-q_ + EPSILON) - q_*torch.log(1-p_ + EPSILON)
+        return torch.mean(func[torch.where(flag_valid>0)])
 
     if torch.isnan(value):
         print('NaN found, info stored at:', os.getcwd())
@@ -91,6 +104,61 @@ def consistency_loss(prob, target, rel, epoch, cnst_fcn='fcn1'):
         raise ValueError('NaN found in loss term')
 
     return value
+
+def consistency_loss1(prob, target, rel, epoch, cnst_fcn='fcn3'):
+    assert prob.shape[0] == target.shape[0] == rel.shape[0]
+    if torch.sum(rel) == 2*rel.shape[0] or epoch<args.start_loss_from_epoch: # no useful pairs
+        return torch.tensor(0).cuda()
+    prob_main = prob[::2, :]
+    prob_sub = prob[1::2, :]
+    target_main = target[::2]
+    target_sub = target[1::2]
+    rel_red = rel[::2]
+
+    p = torch.zeros_like(rel_red, dtype=torch.float32).cuda()
+    q = torch.zeros_like(rel_red, dtype=torch.float32).cuda()
+    p_ = torch.zeros_like(rel_red, dtype=torch.float32).cuda()
+    q_ = torch.zeros_like(rel_red, dtype=torch.float32).cuda()
+
+    # For <-- relations (0 index in rel)
+    p[rel_red==0] = 1 - (prob_main[rel_red==0]*one_hot(target_main[rel_red==0], num_classes = prob_main.shape[1]).to(torch.float32)).sum(1)
+    q[rel_red==0] = (prob_sub[rel_red==0]*one_hot(target_sub[rel_red==0], num_classes = prob_sub.shape[1]).to(torch.float32)).sum(1)
+
+    # For --> relations (1 index in rel)
+    p[rel_red==1] = (prob_main[rel_red==1]*one_hot(target_main[rel_red==1], num_classes = prob_main.shape[1]).to(torch.float32)).sum(1)
+    q[rel_red==1] = 1 - (prob_sub[rel_red==1]*one_hot(target_sub[rel_red==1], num_classes = prob_sub.shape[1]).to(torch.float32)).sum(1)
+
+    # For <-> relations (3 index in rel)
+    p[rel_red==3] = 1 - (prob_main[rel_red==3]*one_hot(target_main[rel_red==3], num_classes = prob_main.shape[1]).to(torch.float32)).sum(1)
+    q[rel_red==3] = (prob_sub[rel_red==3]*one_hot(target_sub[rel_red==3], num_classes = prob_sub.shape[1]).to(torch.float32)).sum(1)
+    p_[rel_red==3] = (prob_main[rel_red==3]*one_hot(target_main[rel_red==3], num_classes = prob_main.shape[1]).to(torch.float32)).sum(1)
+    q_[rel_red==3] = 1 - (prob_sub[rel_red==3]*one_hot(target_sub[rel_red==3], num_classes = prob_sub.shape[1]).to(torch.float32)).sum(1)
+
+    # clip p and q to avoid NaN
+    p = torch.clip(p, min=0, max=1)
+    q = torch.clip(q, min=0, max=1)
+    p_ = torch.clip(p_, min=0, max=1)
+    q_ = torch.clip(q_, min=0, max=1)
+
+    flag_valid = (rel_red!=2).to(torch.int64)
+
+    if cnst_fcn == 'fcn1':
+        value = torch.mean((torch.log(1-p + EPSILON)*torch.log(1-q + EPSILON))[torch.where(flag_valid>0)]) + torch.mean((torch.log(1-p_ + EPSILON)*torch.log(1-q_ + EPSILON))[torch.where(flag_valid>0)])
+    elif cnst_fcn == 'fcn2':
+        sigma = 0.8
+        value =  torch.mean(torch.exp(-((p - 1)**2 + (q - 1)**2)/(2*sigma**2))[torch.where(flag_valid>0)])
+    else:
+        func = -p*torch.log(1-q + EPSILON) - q*torch.log(1-p + EPSILON) - p_*torch.log(1-q_ + EPSILON) - q_*torch.log(1-p_ + EPSILON)
+        return torch.mean(func[torch.where(flag_valid>0)]) 
+
+    if torch.isnan(value):
+        print('NaN found, info stored at:', os.getcwd())
+        to_save = {'prob': prob, 'target': target, 'rel': rel, 'epoch': epoch, 'cnst_fcn': cnst_fcn}
+        torch.save(to_save, os.path.join(args.output, 'info_nan.pt'))
+        raise ValueError('NaN found in loss term')
+
+    return value
+
 
 class VQA:
     def __init__(self):
@@ -146,6 +214,7 @@ class VQA:
         softmax = nn.Softmax(dim=1)
 
         consistency_log = {i:[] for i in range(args.epochs)}
+        bce_log = {i:[] for i in range(args.epochs)}
 
         best_valid = 0.
         for epoch in range(args.epochs):
@@ -161,9 +230,11 @@ class VQA:
                 loss = self.bce_loss(logit, target)
                 if 'cnst_fcn' in args: 
                     gain = getattr(args, 'gain')
-                    cons_term = consistency_loss(softmax(logit), target, rel, epoch, cnst_fcn = args.cnst_fcn)
+                    cons_term = consistency_loss1(softmax(logit), torch.argmax(target, dim=1), rel, epoch, cnst_fcn = args.cnst_fcn)
                     # print(loss.item(), cons_term.item())
-                    loss = (loss + gain*cons_term)*logit.size(1)
+                    bce_log[epoch].append(loss.detach().cpu().item())
+                    #loss = (loss + gain*cons_term)*logit.size(1) 
+                    loss = (loss + gain*cons_term)
                     consistency_log[epoch].append(cons_term.detach().cpu().item())
                 else:
                     loss = loss * logit.size(1)
@@ -198,6 +269,9 @@ class VQA:
         # save consistency loss term log
         with open(os.path.join(self.output, 'consistency_log.json'), 'w') as f:
             json.dump(consistency_log, f)
+        # save loss log
+        with open(os.path.join(self.output, 'bce_log.json'), 'w') as f:
+            json.dump(bce_log, f)
 
     def predict(self, eval_tuple: DataTuple, dump=None):
         """

@@ -1,8 +1,8 @@
 # path definitions
-output: /home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa
-path_vqa_data: /home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_noeq
-path_image_features: /home/sergio814/Documents/PhD/code/data/lxmert/data/mscoco_imgfeat
-load_lxmert_qa: /home/sergio814/Documents/PhD/code/data/lxmert/snap/pretrained/model
+output: logs/lxmert/snap/vqa
+path_vqa_data: /storage/workspaces/artorg_aimi/ws_00000/sergio/lxmert/data/introspect_noeq
+path_image_features: /storage/workspaces/artorg_aimi/ws_00000/sergio/lxmert/data/mscoco_imgfeat
+load_lxmert_qa: /storage/workspaces/artorg_aimi/ws_00000/sergio/lxmert/snap/pretrained/model
 
 # what to train on
 train: train
