@@ -13,7 +13,7 @@ from torch.utils.data.dataloader import DataLoader
 from torch.utils.data import default_collate
 from torch.nn.functional import one_hot
 from tqdm import tqdm
-from aux.io import read_config, update_args
+from ..aux.io import read_config, update_args
 
 from param import args
 from pretrain.qa_answer_table import load_lxmert_qa
