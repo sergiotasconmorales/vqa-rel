@@ -2,12 +2,15 @@
 # Copyleft 2019 project LXRT.
 
 import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import collections
 
 import torch
 from tqdm import tqdm
 import torch.nn as nn
 from torch.utils.data.dataloader import DataLoader
+from aux.io import read_config, update_args
 
 from param import args
 from pretrain.qa_answer_table import load_lxmert_qa
@@ -174,6 +177,12 @@ class GQA:
 
 
 if __name__ == "__main__":
+
+    # Read config
+    config, exp_name = read_config(args.path_config, return_config_name=True)
+    # Update args with info from config
+    update_args(args, config, exp_name)
+
     # Build Class
     gqa = GQA()
 
