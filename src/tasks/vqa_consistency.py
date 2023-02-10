@@ -61,11 +61,12 @@ def get_ans(dict_labels):
     return ans2label[ans_list[index_max]]
 
 
-for i_exp in range(262, 267):
+for i_exp in range(268, 272):
 
     path_pred = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/config_{}_hpc'.format(str(i_exp).zfill(3))
     #path_pred = '/home/sergio814/Documents/PhD/code/logs/lxmert/snap/vqa/vqa2introspect/config_{}_hpc'.format(str(i_exp).zfill(3))
-    path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_nodup'
+    path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/gqa'
+    #path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/introspect_nodup'
     #path_qa = '/home/sergio814/Documents/PhD/code/data/lxmert/data/vqa2introspect'
     dummy = False #! True if checking random flip
 
