@@ -10,7 +10,7 @@ valid: val
 pairs: True
 tiny: False
 cnst_fcn: fcn3
-gain: 0.00002
+gain: 0.0005
 start_loss_from_epoch: 1
 infer_with: BEST # BEST or LAST
 
