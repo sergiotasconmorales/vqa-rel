@@ -12,7 +12,7 @@ path_images = '/home/sergio814/Documents/PhD/code/data/GQA/images/'
 path_output = '/home/sergio814/Documents/PhD/code/data/lxmert/data/examples_gqa'
 os.makedirs(path_output, exist_ok=True)
 
-subset = 'val'
+subset = 'train'
 os.makedirs(jp(path_output, subset), exist_ok=True)
 num_samples = 50
 
@@ -46,3 +46,4 @@ for i in range(num_samples):
     ax[1].imshow(sub_img)
     ax[1].set_title(sub_question + ' ' + sub_ans_gt)
     plt.savefig(jp(path_output, subset, str(i) + '.png'))
+    plt.close()
