@@ -22,7 +22,7 @@ rlayers: 5
 # training hyperparameters
 batch_size: 16 # hast to be 1/2 of normal batch because pairs = True
 optim: bert
-lr: 0.00005
-epochs: 5
+lr: 0.000005
+epochs: 15
 seed: 0
 tqdm: True
